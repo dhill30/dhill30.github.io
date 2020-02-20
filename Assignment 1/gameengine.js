@@ -1,36 +1,16 @@
-// This game shell was happily copied from Googler Seth Ladd's "Bad Aliens" game and his Google IO talk in 2011
-
 window.requestAnimFrame = (function () {
     return window.requestAnimationFrame ||
-        window.webkitRequestAnimationFrame ||
-        window.mozRequestAnimationFrame ||
-        window.oRequestAnimationFrame ||
-        window.msRequestAnimationFrame ||
-        function (/* function */ callback, /* DOMElement */ element) {
-            window.setTimeout(callback, 1000 / 60);
-        };
+            window.webkitRequestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            window.oRequestAnimationFrame ||
+            window.msRequestAnimationFrame ||
+            function (/* function */ callback, /* DOMElement */ element) {
+                window.setTimeout(callback, 1000 / 60);
+            };
 })();
-
-
-function Timer() {
-    this.gameTime = 0;
-    this.maxStep = 0.05;
-    this.wallLastTimestamp = 0;
-}
-
-Timer.prototype.tick = function () {
-    var wallCurrent = Date.now();
-    var wallDelta = (wallCurrent - this.wallLastTimestamp) / 1000;
-    this.wallLastTimestamp = wallCurrent;
-
-    var gameDelta = Math.min(wallDelta, this.maxStep);
-    this.gameTime += gameDelta;
-    return gameDelta;
-}
 
 function GameEngine() {
     this.entities = [];
-    this.showOutlines = false;
     this.ctx = null;
     this.surfaceWidth = null;
     this.surfaceHeight = null;
@@ -59,7 +39,7 @@ GameEngine.prototype.addEntity = function (entity) {
 }
 
 GameEngine.prototype.draw = function () {
-    this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+    this.ctx.clearRect(0, 0, this.surfaceWidth, this.surfaceHeight);
     this.ctx.save();
     for (var i = 0; i < this.entities.length; i++) {
         this.entities[i].draw(this.ctx);
@@ -73,15 +53,7 @@ GameEngine.prototype.update = function () {
     for (var i = 0; i < entitiesCount; i++) {
         var entity = this.entities[i];
 
-        if (!entity.removeFromWorld) {
-            entity.update();
-        }
-    }
-
-    for (var i = this.entities.length - 1; i >= 0; --i) {
-        if (this.entities[i].removeFromWorld) {
-            this.entities.splice(i, 1);
-        }
+        entity.update();
     }
 }
 
@@ -91,10 +63,20 @@ GameEngine.prototype.loop = function () {
     this.draw();
 }
 
-function distance(a, b) {
-    var dx = a.x - b.x;
-    var dy = a.y - b.y;
-    return Math.sqrt(dx * dx + dy * dy);
+function Timer() {
+    this.gameTime = 0;
+    this.maxStep = 0.05;
+    this.wallLastTimestamp = 0;
+}
+
+Timer.prototype.tick = function () {
+    var wallCurrent = Date.now();
+    var wallDelta = (wallCurrent - this.wallLastTimestamp) / 1000;
+    this.wallLastTimestamp = wallCurrent;
+
+    var gameDelta = Math.min(wallDelta, this.maxStep);
+    this.gameTime += gameDelta;
+    return gameDelta;
 }
 
 function Entity(game, x, y) {
@@ -115,26 +97,6 @@ Entity.prototype.draw = function (ctx) {
         this.game.ctx.stroke();
         this.game.ctx.closePath();
     }
-}
-
-Entity.prototype.collide = function (other) {
-    return distance(this, other) < this.radius + other.radius;
-}
-
-Entity.prototype.collideLeft = function () {
-    return (this.x - this.radius) < 0;
-}
-
-Entity.prototype.collideRight = function () {
-    return (this.x + this.radius) > 1200;
-}
-
-Entity.prototype.collideTop = function () {
-    return (this.y - this.radius) < 0;
-}
-
-Entity.prototype.collideBottom = function () {
-    return (this.y + this.radius) > 1200;
 }
 
 Entity.prototype.rotateAndCache = function (image, angle) {

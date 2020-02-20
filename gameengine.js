@@ -30,7 +30,6 @@ Timer.prototype.tick = function () {
 
 function GameEngine() {
     this.entities = [];
-    this.showOutlines = false;
     this.ctx = null;
     this.surfaceWidth = null;
     this.surfaceHeight = null;
@@ -68,13 +67,11 @@ GameEngine.prototype.draw = function () {
 }
 
 GameEngine.prototype.update = function () {
-    var entitiesCount = this.entities.length;
 
-    for (var i = 0; i < entitiesCount; i++) {
-        var entity = this.entities[i];
-
-        if (!entity.removeFromWorld) {
-            entity.update();
+    for (var i = 0; i < this.entities.length; i++) {
+        var ent = this.entities[i];
+        if (!ent.removeFromWorld) {
+            ent.update();
         }
     }
 

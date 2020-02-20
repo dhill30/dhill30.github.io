@@ -1,9 +1,10 @@
 function Agent(game, x, y) {
     this.rotation = 0;
     this.velocity = { x: 0, y: 0 };
-    this.health = 5;
+    this.health = 10;
     this.atkCD = 0;
     this.hitCD = 0;
+    this.healCD = 0;
 
     Entity.call(this, game, x, y);
 }
@@ -12,6 +13,7 @@ Agent.prototype = new Entity();
 Agent.prototype.constructor = Agent;
 
 Agent.prototype.update = function () {
+    if (this.healCD > 0) this.healCD--;
     if (this.atkCD > 0) this.atkCD--;
     if (this.hitCD > 0) this.hitCD--;
     else this.hurt = false;
@@ -50,14 +52,27 @@ Agent.prototype.update = function () {
     for (var i = 0; i < this.game.entities.length; i++) {
         var ent = this.game.entities[i];
         var dist = distance(this, ent);
-        if (ent.team != this.team && dist < nearest - 1) {
-            nearest = dist;
-            index = i;
+        if (ent.team != this.team) {
+            if (dist < nearest) {
+                nearest = dist;
+                index = i;
+            }
+            else if (dist == nearest) {
+                var rand = Math.floor(Math.random() * 2);
+                if (rand == 1) {
+                    nearest = dist;
+                    index = i;
+                }
+            }
         }
         var difX = Math.cos(this.rotation);
         var difY = Math.sin(this.rotation);
         var delta = this.radius + ent.radius - dist;
         if (this.collide(ent)) {
+            if (ent.team == this.team && ent.healCD <= 0) {
+                ent.health++;
+                ent.healCD = 180;
+            }
             this.velocity.x = -this.velocity.x * (1 / friction);
             this.velocity.y = -this.velocity.y * (1 / friction);
             this.x -= difX * delta / 2;
@@ -96,8 +111,6 @@ Agent.prototype.update = function () {
 
     this.velocity.x -= friction * this.game.clockTick * this.velocity.x;
     this.velocity.y -= friction * this.game.clockTick * this.velocity.y;
-
-    Entity.prototype.update.call(this);
 }
 
 Agent.prototype.draw = function (ctx) {
@@ -111,7 +124,6 @@ Agent.prototype.draw = function (ctx) {
         else
             this.move.drawFrame(this.game.clockTick, ctx, this.x, this.y, this.rotation + Math.PI / 2);
     }
-    Entity.prototype.draw.call(this);
 }
 
 Agent.prototype.checkHit = function (other) {
@@ -134,7 +146,7 @@ Agent.prototype.checkHit = function (other) {
         return false;
 }
 
-function Batter(game, team) {
+function Batter(game, team, x, y) {
     // animations
     this.idle = new Animation(ASSET_MANAGER.getAsset('./img/thug_bat_' + team + '.png'), 0, 0, 200, 200, 0.12, 1, true, false);
     this.move = new Animation(ASSET_MANAGER.getAsset('./img/thug_bat_' + team + '.png'), 0, 0, 200, 200, 0.12, 8, true, false);
@@ -152,16 +164,13 @@ function Batter(game, team) {
     this.endLag = 65;
     this.hitDur = 20;
 
-    if (team == 'red') Agent.call(this, game, Math.random() * 400, Math.random() * 400 + 400);
-    else if (team == 'green') Agent.call(this, game, Math.random() * 400 + 400, Math.random() * 400);
-    else if (team == 'blue') Agent.call(this, game, Math.random() * 400 + 800, Math.random() * 400 + 400);
-    else Agent.call(this, game, Math.random() * 400 + 400, Math.random() * 400 + 800);
+    Agent.call(this, game, x, y);
 }
 
 Batter.prototype = new Agent();
 Batter.prototype.constructor = Batter;
 
-function Knifer(game, team) {
+function Knifer(game, team, x, y) {
     // animations
     this.idle = new Animation(ASSET_MANAGER.getAsset('./img/thug_knife_' + team + '.png'), 0, 0, 200, 200, 0.12, 1, true, false);
     this.move = new Animation(ASSET_MANAGER.getAsset('./img/thug_knife_' + team + '.png'), 0, 0, 200, 200, 0.12, 8, true, false);
@@ -174,15 +183,12 @@ function Knifer(game, team) {
     this.faces = 32;
     this.sides = 38;
     this.weapon = 'knife';
-    this.range = 90;
+    this.range = 85;
     this.begLag = 110;
     this.endLag = 45;
     this.hitDur = 14;
 
-    if (team == 'red') Agent.call(this, game, Math.random() * 400, Math.random() * 400 + 400);
-    else if (team == 'green') Agent.call(this, game, Math.random() * 400 + 400, Math.random() * 400);
-    else if (team == 'blue') Agent.call(this, game, Math.random() * 400 + 800, Math.random() * 400 + 400);
-    else Agent.call(this, game, Math.random() * 400 + 400, Math.random() * 400 + 800);
+    Agent.call(this, game, x, y);
 }
 
 Knifer.prototype = new Agent();

@@ -56,8 +56,8 @@ Animation.prototype.isDone = function () {
 }
 
 // the "main" code begins here
-var friction = 8;
-var acceleration = 100;
+var friction = 5;
+var acceleration = 65;
 var maxSpeed = 150;
 
 var ASSET_MANAGER = new AssetManager();
@@ -79,32 +79,33 @@ ASSET_MANAGER.downloadAll(function () {
     var gameEngine = new GameEngine();
 
     // Red army
-    var red1 = new Knifer(gameEngine, 'red');
-    var red2 = new Batter(gameEngine, 'red');
-    var red3 = new Knifer(gameEngine, 'red');
-    var red4 = new Batter(gameEngine, 'red');
-    var red5 = new Knifer(gameEngine, 'red');
+    var red1 = new Knifer(gameEngine, 'red', 250, 500);
+    var red2 = new Knifer(gameEngine, 'red', 250, 600);
+    var red3 = new Knifer(gameEngine, 'red', 250, 700);
+    var red4 = new Batter(gameEngine, 'red', 175, 550);
+    var red5 = new Batter(gameEngine, 'red', 175, 650);
 
     // Green army
-    var green1 = new Knifer(gameEngine, 'green');
-    var green2 = new Batter(gameEngine, 'green');
-    var green3 = new Knifer(gameEngine, 'green');
-    var green4 = new Batter(gameEngine, 'green');
-    var green5 = new Knifer(gameEngine, 'green');
+    var green1 = new Knifer(gameEngine, 'green', 500, 250);
+    var green2 = new Knifer(gameEngine, 'green', 600, 250);
+    var green3 = new Knifer(gameEngine, 'green', 700, 250);
+    var green4 = new Batter(gameEngine, 'green', 550, 175);
+    var green5 = new Batter(gameEngine, 'green', 650, 175);
 
     // Blue army
-    var blue1 = new Knifer(gameEngine, 'blue');
-    var blue2 = new Batter(gameEngine, 'blue');
-    var blue3 = new Knifer(gameEngine, 'blue');
-    var blue4 = new Batter(gameEngine, 'blue');
-    var blue5 = new Knifer(gameEngine, 'blue');
+    var blue1 = new Knifer(gameEngine, 'blue', 950, 500);
+    var blue2 = new Knifer(gameEngine, 'blue', 950, 600);
+    var blue3 = new Knifer(gameEngine, 'blue', 950, 700);
+    var blue4 = new Batter(gameEngine, 'blue', 1025, 550);
+    var blue5 = new Batter(gameEngine, 'blue', 1025, 650);
 
     // Yellow army
-    var yellow1 = new Knifer(gameEngine, 'yellow');
-    var yellow2 = new Batter(gameEngine, 'yellow');
-    var yellow3 = new Knifer(gameEngine, 'yellow');
-    var yellow4 = new Batter(gameEngine, 'yellow');
-    var yellow5 = new Knifer(gameEngine, 'yellow');
+    var yellow1 = new Knifer(gameEngine, 'yellow', 500, 950);
+    var yellow2 = new Knifer(gameEngine, 'yellow', 600, 950);
+    var yellow3 = new Knifer(gameEngine, 'yellow', 700, 950);
+    var yellow4 = new Batter(gameEngine, 'yellow', 550, 1025);
+    var yellow5 = new Batter(gameEngine, 'yellow', 650, 1025);
+
 
     gameEngine.addEntity(red1);
     gameEngine.addEntity(green1);

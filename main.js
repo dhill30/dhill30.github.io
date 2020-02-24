@@ -64,12 +64,16 @@ var ASSET_MANAGER = new AssetManager();
 
 ASSET_MANAGER.queueDownload("./img/thug_bat_red.png");
 ASSET_MANAGER.queueDownload("./img/thug_knife_red.png");
+ASSET_MANAGER.queueDownload("./img/bodyguard_red.png");
 ASSET_MANAGER.queueDownload("./img/thug_bat_green.png");
 ASSET_MANAGER.queueDownload("./img/thug_knife_green.png");
+ASSET_MANAGER.queueDownload("./img/bodyguard_green.png");
 ASSET_MANAGER.queueDownload("./img/thug_bat_blue.png");
 ASSET_MANAGER.queueDownload("./img/thug_knife_blue.png");
+ASSET_MANAGER.queueDownload("./img/bodyguard_blue.png");
 ASSET_MANAGER.queueDownload("./img/thug_bat_yellow.png");
 ASSET_MANAGER.queueDownload("./img/thug_knife_yellow.png");
+ASSET_MANAGER.queueDownload("./img/bodyguard_yellow.png");
 
 ASSET_MANAGER.downloadAll(function () {
     console.log("starting up da sheild");
@@ -79,32 +83,40 @@ ASSET_MANAGER.downloadAll(function () {
     var gameEngine = new GameEngine();
 
     // Red army
-    var red1 = new Knifer(gameEngine, 'red', 250, 500);
-    var red2 = new Knifer(gameEngine, 'red', 250, 600);
-    var red3 = new Knifer(gameEngine, 'red', 250, 700);
-    var red4 = new Batter(gameEngine, 'red', 175, 550);
-    var red5 = new Batter(gameEngine, 'red', 175, 650);
+    var red1 = new Knifer(gameEngine, 'red', 150, 450);
+    var red2 = new Knifer(gameEngine, 'red', 150, 550);
+    var red3 = new Knifer(gameEngine, 'red', 150, 650);
+    var red4 = new Knifer(gameEngine, 'red', 150, 750);
+    var red5 = new Batter(gameEngine, 'red', 75, 500);
+    var red6 = new Batter(gameEngine, 'red', 75, 700);
+    var red7 = new Slammer(gameEngine, 'red', 75, 600);
 
     // Green army
-    var green1 = new Knifer(gameEngine, 'green', 500, 250);
-    var green2 = new Knifer(gameEngine, 'green', 600, 250);
-    var green3 = new Knifer(gameEngine, 'green', 700, 250);
-    var green4 = new Batter(gameEngine, 'green', 550, 175);
-    var green5 = new Batter(gameEngine, 'green', 650, 175);
+    var green1 = new Knifer(gameEngine, 'green', 450, 150);
+    var green2 = new Knifer(gameEngine, 'green', 550, 150);
+    var green3 = new Knifer(gameEngine, 'green', 650, 150);
+    var green4 = new Knifer(gameEngine, 'green', 750, 150);
+    var green5 = new Batter(gameEngine, 'green', 500, 75);
+    var green6 = new Batter(gameEngine, 'green', 700, 75);
+    var green7 = new Slammer(gameEngine, 'green', 600, 75);
 
     // Blue army
-    var blue1 = new Knifer(gameEngine, 'blue', 950, 500);
-    var blue2 = new Knifer(gameEngine, 'blue', 950, 600);
-    var blue3 = new Knifer(gameEngine, 'blue', 950, 700);
-    var blue4 = new Batter(gameEngine, 'blue', 1025, 550);
-    var blue5 = new Batter(gameEngine, 'blue', 1025, 650);
+    var blue1 = new Knifer(gameEngine, 'blue', 1050, 450);
+    var blue2 = new Knifer(gameEngine, 'blue', 1050, 550);
+    var blue3 = new Knifer(gameEngine, 'blue', 1050, 650);
+    var blue4 = new Knifer(gameEngine, 'blue', 1050, 750);
+    var blue5 = new Batter(gameEngine, 'blue', 1125, 500);
+    var blue6 = new Batter(gameEngine, 'blue', 1125, 700);
+    var blue7 = new Slammer(gameEngine, 'blue', 1125, 600);
 
     // Yellow army
-    var yellow1 = new Knifer(gameEngine, 'yellow', 500, 950);
-    var yellow2 = new Knifer(gameEngine, 'yellow', 600, 950);
-    var yellow3 = new Knifer(gameEngine, 'yellow', 700, 950);
-    var yellow4 = new Batter(gameEngine, 'yellow', 550, 1025);
-    var yellow5 = new Batter(gameEngine, 'yellow', 650, 1025);
+    var yellow1 = new Knifer(gameEngine, 'yellow', 450, 1050);
+    var yellow2 = new Knifer(gameEngine, 'yellow', 550, 1050);
+    var yellow3 = new Knifer(gameEngine, 'yellow', 650, 1050);
+    var yellow4 = new Knifer(gameEngine, 'yellow', 750, 1050);
+    var yellow5 = new Batter(gameEngine, 'yellow', 500, 1125);
+    var yellow6 = new Batter(gameEngine, 'yellow', 700, 1125);
+    var yellow7 = new Slammer(gameEngine, 'yellow', 600, 1125);
 
 
     gameEngine.addEntity(red1);
@@ -127,6 +139,14 @@ ASSET_MANAGER.downloadAll(function () {
     gameEngine.addEntity(green5);
     gameEngine.addEntity(blue5);
     gameEngine.addEntity(yellow5);
+    gameEngine.addEntity(red6);
+    gameEngine.addEntity(green6);
+    gameEngine.addEntity(blue6);
+    gameEngine.addEntity(yellow6);
+    gameEngine.addEntity(red7);
+    gameEngine.addEntity(green7);
+    gameEngine.addEntity(blue7);
+    gameEngine.addEntity(yellow7);
 
     gameEngine.init(ctx);
     gameEngine.start();

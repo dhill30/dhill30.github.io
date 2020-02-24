@@ -1,9 +1,11 @@
-function Agent(game, x, y) {
+function Agent(game, x, y, health) {
     this.rotation = 0;
     this.velocity = { x: 0, y: 0 };
-    this.health = 10;
+    this.health = health;
     this.atkCD = 0;
+    this.slmCD = 0;
     this.hitCD = 0;
+    this.stunCD = 0;
     this.healCD = 0;
 
     Entity.call(this, game, x, y);
@@ -14,7 +16,9 @@ Agent.prototype.constructor = Agent;
 
 Agent.prototype.update = function () {
     if (this.healCD > 0) this.healCD--;
+    if (this.stunCD > 0) this.stunCD--;
     if (this.atkCD > 0) this.atkCD--;
+    if (this.slmCD > 0) this.slmCD--;
     if (this.hitCD > 0) this.hitCD--;
     else this.hurt = false;
 
@@ -23,6 +27,17 @@ Agent.prototype.update = function () {
     if (this.hurt && this.hit.isDone()) {
         this.hit.elapsedTime = 0;
         this.hurt = false;
+    }
+    if (this.slamming) {
+        if (this.slm.isDone()) {
+            this.slm.elapsedTime = 0;
+            this.slamming = false;
+            this.slmCD = 180;
+        }
+        else {
+            this.velocity.x = 0;
+            this.velocity.y = 0;
+        }
     }
     if (this.attacking) {
         if (this.atk.isDone()) {
@@ -80,21 +95,32 @@ Agent.prototype.update = function () {
             ent.x += difX * delta / 2;
             ent.y += difY * delta / 2;
         }
-        if (ent.team != this.team && this.attacking && ent.hitCD <= 0 && this.checkHit(ent)
-            && this.atkCD > (100 - this.hitDur) && this.atkCD <= 100) {
+        if (ent.team != this.team && this.slamming && ent.hitCD <= 0 && this.checkHit(ent, 120)
+            && this.slmCD > 85 && this.slmCD <= 100) {
             ent.hurt = true;
             ent.health--;
+            ent.hitCD = 15;
+            ent.stunCD = 30;
+        }
+        else if (ent.team != this.team && this.attacking && ent.hitCD <= 0 && this.checkHit(ent)
+            && this.atkCD > (100 - this.hitDur) && this.atkCD <= 100) {
+            ent.hurt = true;
+            ent.health -= this.damage;
             ent.hitCD = this.hitDur;
         }
     }
     var target = this.game.entities[index];
-    if (target.team != this.team) {
+    if (target.team != this.team && this.stunCD <= 0) {
         this.rotation = Math.atan2(target.y - this.y, target.x - this.x);
         var difX = Math.cos(this.rotation);
         var difY = Math.sin(this.rotation);
         this.velocity.x += difX * acceleration;
         this.velocity.y += difY * acceleration;
-        if (distance(this, target) < (this.range + target.radius / 2) && this.atkCD <= 0) {
+        if (this.weapon == 'swing' && distance(this, ent) < 140 && this.slmCD <= 0) {
+            this.slamming = true;
+            this.slmCD = 136;
+        }
+        else if (distance(this, target) < (this.range + target.radius / 2) && this.atkCD <= 0) {
             this.attacking = true;
             this.atkCD = this.begLag;
         }
@@ -116,6 +142,8 @@ Agent.prototype.update = function () {
 Agent.prototype.draw = function (ctx) {
     if (this.hurt)
         this.hit.drawFrame(this.game.clockTick, ctx, this.x, this.y, this.rotation + Math.PI / 2);
+    else if (this.slamming)
+        this.slm.drawFrame(this.game.clockTick, ctx, this.x, this.y, this.rotation + Math.PI / 2);
     else if (this.attacking)
         this.atk.drawFrame(this.game.clockTick, ctx, this.x, this.y, this.rotation + Math.PI / 2);
     else {
@@ -126,7 +154,7 @@ Agent.prototype.draw = function (ctx) {
     }
 }
 
-Agent.prototype.checkHit = function (other) {
+Agent.prototype.checkHit = function (other, range) {
     var acc = Math.abs(this.rotation - Math.atan2(other.y - this.y, other.x - this.x));
     if (acc > Math.PI) acc = (Math.PI * 2) - acc;
 
@@ -134,14 +162,18 @@ Agent.prototype.checkHit = function (other) {
     if (orien > Math.PI) orien = (Math.PI * 2) - orien;
 
     var dist = distance(this, other);
-    if ((dist < 75 && acc < Math.PI / 6)
-        || (this.weapon == 'bat' && acc < Math.PI * 2 / 5)
-        || acc < Math.PI / 8) {
-        if (orien < Math.PI / 4 || orien > Math.PI * 3 / 4)
-            return dist < this.range + other.faces;
-        else
-            return dist < this.range + other.sides;
+    if (range === undefined) {
+        if ((dist < 75 && acc < Math.PI / 6)
+            || ((this.weapon == 'bat' || this.weapon == 'swing') && acc < Math.PI * 3 / 7)
+            || acc < Math.PI / 8) {
+            if (orien < Math.PI / 4 || orien > Math.PI * 3 / 4)
+                return dist < this.range + other.faces;
+            else
+                return dist < this.range + other.sides;
+        }
     }
+    else if (dist < range)
+        return dist < range + other.radius;
     else
         return false;
 }
@@ -160,11 +192,12 @@ function Batter(game, team, x, y) {
     this.sides = 38;
     this.weapon = 'bat';
     this.range = 110;
+    this.damage = 1;
     this.begLag = 116;
     this.endLag = 65;
     this.hitDur = 20;
 
-    Agent.call(this, game, x, y);
+    Agent.call(this, game, x, y, 10);
 }
 
 Batter.prototype = new Agent();
@@ -184,12 +217,42 @@ function Knifer(game, team, x, y) {
     this.sides = 38;
     this.weapon = 'knife';
     this.range = 85;
+    this.damage = 1;
     this.begLag = 110;
     this.endLag = 45;
     this.hitDur = 14;
 
-    Agent.call(this, game, x, y);
+    Agent.call(this, game, x, y, 10);
 }
 
 Knifer.prototype = new Agent();
 Knifer.prototype.constructor = Knifer;
+
+function Slammer(game, team, x, y) {
+    var dominant = Math.floor(Math.random() * 2);
+
+    // animations
+    this.idle = new Animation(ASSET_MANAGER.getAsset('./img/bodyguard_' + team + '.png'), 0, 0, 200, 200, 0.15, 1, true, false);
+    this.move = new Animation(ASSET_MANAGER.getAsset('./img/bodyguard_' + team + '.png'), 0, 0, 200, 200, 0.15, 8, true, false);
+    if (dominant == 0) this.atk = new Animation(ASSET_MANAGER.getAsset('./img/bodyguard_' + team + '.png'), 0, 200, 200, 200, 0.2, 4, false, false);
+    else this.atk = new Animation(ASSET_MANAGER.getAsset('./img/bodyguard_' + team + '.png'), 800, 200, 200, 200, 0.2, 4, false, false);
+    this.slm = new Animation(ASSET_MANAGER.getAsset('./img/bodyguard_' + team + '.png'), 0, 400, 200, 200, 0.12, 7, false, false);
+    this.hit = new Animation(ASSET_MANAGER.getAsset('./img/bodyguard_' + team + '.png'), 1400, 400, 200, 200, 0.15, 1, false, false);
+
+    // properties
+    this.team = team;
+    this.radius = 28;
+    this.faces = 36;
+    this.sides = 50;
+    this.weapon = 'swing';
+    this.range = 65;
+    this.damage = 2;
+    this.begLag = 124;
+    this.endLag = 85;
+    this.hitDur = 24;
+
+    Agent.call(this, game, x, y, 15);
+}
+
+Slammer.prototype = new Agent();
+Slammer.prototype.constructor = Slammer;

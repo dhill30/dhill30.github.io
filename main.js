@@ -1,81 +1,48 @@
-function Animation(spriteSheet, startX, startY, frameWidth, frameHeight, frameDuration, frames, loop, reverse) {
-    this.spriteSheet = spriteSheet;
-    this.startX = startX;
-    this.startY = startY;
-    this.frameWidth = frameWidth;
-    this.frameDuration = frameDuration;
-    this.frameHeight = frameHeight;
-    this.frames = frames;
-    this.totalTime = frameDuration * frames;
-    this.elapsedTime = 0;
-    this.loop = loop;
-    this.reverse = reverse;
-}
+window.onload = function () {
+    var socket = io.connect("http://24.16.255.56:8888");
+    var text = document.getElementById("text");
+    var saveButton = document.getElementById("save");
+    var loadButton = document.getElementById("load");
 
-Animation.prototype.drawFrame = function (tick, ctx, x, y, angle, scaleBy) {
-    var scaleBy = scaleBy || 1;
-    this.elapsedTime += tick;
-    if (this.loop) {
-        if (this.isDone()) {
-            this.elapsedTime = 0;
+    socket.on("load", function (loadData) {
+        for (var i = gameEngine.entities.length - 1; i >= 0; --i)
+            gameEngine.entities.splice(i, 1);
+        for (var i = 0; i < loadData.data.length; i++) {
+            var entData = loadData.data[i];
+            var ent;
+            if (entData.weapon == 'knife')
+                ent = new Knifer(gameEngine, entData.team, entData.pos.x, entData.pos.y);
+            else if (entData.weapon == 'bat')
+                ent = new Batter(gameEngine, entData.team, entData.pos.x, entData.pos.y);
+            else
+                ent = new Slammer(gameEngine, entData.team, entData.pos.x, entData.pos.y);
+            ent.rotation = entData.rot;
+            ent.health = entData.health;
+            ent.hurt = entData.hurt;
+            ent.slamming = entData.slamming;
+            ent.attacking = entData.attacking;
+            ent.atkCD = entData.atkCD;
+            ent.slmCD = entData.slmCD;
+            ent.hitCD = entData.hitCD;
+            ent.stunCD = entData.stunCD;
+            ent.healCD = entData.healCD;
+            gameEngine.addEntity(ent);
         }
-    } else if (this.isDone()) {
-        return;
-    }
-    var index = this.reverse ? this.frames - this.currentFrame() - 1 : this.currentFrame();
-    var vindex = 0;
-    if ((index + 1) * this.frameWidth + this.startX > this.spriteSheet.width) {
-        index -= Math.floor((this.spriteSheet.width - this.startX) / this.frameWidth);
-        vindex++;
-    }
-    while ((index + 1) * this.frameWidth > this.spriteSheet.width) {
-        index -= Math.floor(this.spriteSheet.width / this.frameWidth);
-        vindex++;
-    }
+    });
 
-    var locX = x;
-    var locY = y;
-    var offset = vindex === 0 ? this.startX : 0;
+    saveButton.onclick = function () {
+        var saveData = getData(gameEngine);
+        socket.emit("save", { studentname: "Dylan Hill", statename: "BattleRGBY", data: saveData });
+        console.log("save");
+        text.innerHTML = "Saved."
+    };
 
-    ctx.setTransform(1, 0, 0, 1, locX, locY);
-    ctx.rotate(angle);
-    ctx.drawImage(this.spriteSheet,
-        index * this.frameWidth + offset, vindex * this.frameHeight + this.startY,  // source from sheet
-        this.frameWidth, this.frameHeight, -this.frameWidth / 2, -this.frameHeight / 2,
-        this.frameWidth * scaleBy, this.frameHeight * scaleBy);
-    ctx.rotate(angle);
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-}
+    loadButton.onclick = function () {
+        socket.emit("load", { studentname: "Dylan Hill", statename: "BattleRGBY" });
+        console.log("load");
+        text.innerHTML = "Loaded."
+    };
 
-Animation.prototype.currentFrame = function () {
-    return Math.floor(this.elapsedTime / this.frameDuration);
-}
-
-Animation.prototype.isDone = function () {
-    return (this.elapsedTime >= this.totalTime);
-}
-
-// the "main" code begins here
-var friction = 5;
-var acceleration = 65;
-var maxSpeed = 150;
-
-var ASSET_MANAGER = new AssetManager();
-
-ASSET_MANAGER.queueDownload("./img/thug_bat_red.png");
-ASSET_MANAGER.queueDownload("./img/thug_knife_red.png");
-ASSET_MANAGER.queueDownload("./img/bodyguard_red.png");
-ASSET_MANAGER.queueDownload("./img/thug_bat_green.png");
-ASSET_MANAGER.queueDownload("./img/thug_knife_green.png");
-ASSET_MANAGER.queueDownload("./img/bodyguard_green.png");
-ASSET_MANAGER.queueDownload("./img/thug_bat_blue.png");
-ASSET_MANAGER.queueDownload("./img/thug_knife_blue.png");
-ASSET_MANAGER.queueDownload("./img/bodyguard_blue.png");
-ASSET_MANAGER.queueDownload("./img/thug_bat_yellow.png");
-ASSET_MANAGER.queueDownload("./img/thug_knife_yellow.png");
-ASSET_MANAGER.queueDownload("./img/bodyguard_yellow.png");
-
-ASSET_MANAGER.downloadAll(function () {
     console.log("starting up da sheild");
     var canvas = document.getElementById('gameWorld');
     var ctx = canvas.getContext('2d');
@@ -150,4 +117,106 @@ ASSET_MANAGER.downloadAll(function () {
 
     gameEngine.init(ctx);
     gameEngine.start();
-});
+};
+
+function getData(game) {
+    var data = [];
+    for (var i = 0; i < game.entities.length; i++) {
+        var entData = {};
+        var ent = game.entities[i];
+        entData.team = ent.team;
+        entData.pos = { x: ent.x, y: ent.y };
+        entData.rot = ent.rotation;
+        entData.weapon = ent.weapon;
+        entData.health = ent.health;
+        entData.hurt = ent.hurt;
+        entData.slamming = ent.slamming;
+        entData.attacking = ent.attacking;
+        entData.atkCD = ent.atkCD;
+        entData.slmCD = ent.slmCD;
+        entData.hitCD = ent.hitCD;
+        entData.stunCD = ent.stunCD;
+        entData.healCD = ent.healCD;
+        data[i] = entData;
+    }
+    return data;
+}
+
+function Animation(spriteSheet, startX, startY, frameWidth, frameHeight, frameDuration, frames, loop, reverse) {
+    this.spriteSheet = spriteSheet;
+    this.startX = startX;
+    this.startY = startY;
+    this.frameWidth = frameWidth;
+    this.frameDuration = frameDuration;
+    this.frameHeight = frameHeight;
+    this.frames = frames;
+    this.totalTime = frameDuration * frames;
+    this.elapsedTime = 0;
+    this.loop = loop;
+    this.reverse = reverse;
+}
+
+Animation.prototype.drawFrame = function (tick, ctx, x, y, angle, scaleBy) {
+    var scaleBy = scaleBy || 1;
+    this.elapsedTime += tick;
+    if (this.loop) {
+        if (this.isDone()) {
+            this.elapsedTime = 0;
+        }
+    } else if (this.isDone()) {
+        return;
+    }
+    var index = this.reverse ? this.frames - this.currentFrame() - 1 : this.currentFrame();
+    var vindex = 0;
+    if ((index + 1) * this.frameWidth + this.startX > this.spriteSheet.width) {
+        index -= Math.floor((this.spriteSheet.width - this.startX) / this.frameWidth);
+        vindex++;
+    }
+    while ((index + 1) * this.frameWidth > this.spriteSheet.width) {
+        index -= Math.floor(this.spriteSheet.width / this.frameWidth);
+        vindex++;
+    }
+
+    var locX = x;
+    var locY = y;
+    var offset = vindex === 0 ? this.startX : 0;
+
+    ctx.setTransform(1, 0, 0, 1, locX, locY);
+    ctx.rotate(angle);
+    ctx.drawImage(this.spriteSheet,
+        index * this.frameWidth + offset, vindex * this.frameHeight + this.startY,  // source from sheet
+        this.frameWidth, this.frameHeight, -this.frameWidth / 2, -this.frameHeight / 2,
+        this.frameWidth * scaleBy, this.frameHeight * scaleBy);
+    ctx.rotate(angle);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+};
+
+Animation.prototype.currentFrame = function () {
+    return Math.floor(this.elapsedTime / this.frameDuration);
+};
+
+Animation.prototype.isDone = function () {
+    return (this.elapsedTime >= this.totalTime);
+};
+
+// the "main" code begins here
+var friction = 5;
+var acceleration = 65;
+var maxSpeed = 150;
+
+var ASSET_MANAGER = new AssetManager();
+
+ASSET_MANAGER.queueDownload("./img/thug_bat_red.png");
+ASSET_MANAGER.queueDownload("./img/thug_knife_red.png");
+ASSET_MANAGER.queueDownload("./img/bodyguard_red.png");
+ASSET_MANAGER.queueDownload("./img/thug_bat_green.png");
+ASSET_MANAGER.queueDownload("./img/thug_knife_green.png");
+ASSET_MANAGER.queueDownload("./img/bodyguard_green.png");
+ASSET_MANAGER.queueDownload("./img/thug_bat_blue.png");
+ASSET_MANAGER.queueDownload("./img/thug_knife_blue.png");
+ASSET_MANAGER.queueDownload("./img/bodyguard_blue.png");
+ASSET_MANAGER.queueDownload("./img/thug_bat_yellow.png");
+ASSET_MANAGER.queueDownload("./img/thug_knife_yellow.png");
+ASSET_MANAGER.queueDownload("./img/bodyguard_yellow.png");
+
+ASSET_MANAGER.downloadAll(function () { });

@@ -137,7 +137,7 @@ Agent.prototype.update = function () {
 
     this.velocity.x -= friction * this.game.clockTick * this.velocity.x;
     this.velocity.y -= friction * this.game.clockTick * this.velocity.y;
-}
+};
 
 Agent.prototype.draw = function (ctx) {
     if (this.hurt)
@@ -152,7 +152,7 @@ Agent.prototype.draw = function (ctx) {
         else
             this.move.drawFrame(this.game.clockTick, ctx, this.x, this.y, this.rotation + Math.PI / 2);
     }
-}
+};
 
 Agent.prototype.checkHit = function (other, range) {
     var acc = Math.abs(this.rotation - Math.atan2(other.y - this.y, other.x - this.x));
@@ -176,7 +176,7 @@ Agent.prototype.checkHit = function (other, range) {
         return dist < range + other.radius;
     else
         return false;
-}
+};
 
 function Batter(game, team, x, y) {
     // animations
